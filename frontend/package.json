@@ -1,0 +1,13 @@
+{
+  "name": "circuit-breaker-frontend",
+  "version": "1.0.0",
+  "description": "Static frontend for Circuit Breaker demo",
+  "main": "index.html",
+  "scripts": {
+    "dev": "npx http-server ./ -c-1 -p 8080",
+    "start": "npx http-server ./ -c-1 -p 8080"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT"
+}

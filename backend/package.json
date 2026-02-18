@@ -1,0 +1,38 @@
+{
+  "name": "circuit-breaker",
+  "version": "1.0.0",
+  "description": "Production-grade Circuit Breaker Pattern implementation with Express and MongoDB",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "test": "node tests/circuitBreaker.test.js",
+    "test:load": "node tests/loadTest.js",
+    "test:load:heavy": "RPS=100 DURATION=60 node tests/loadTest.js",
+    "lint": "eslint .",
+    "reset": "curl -X POST http://localhost:3000/admin/reset",
+    "status": "curl http://localhost:3000/admin/status | jq"
+  },
+  "keywords": [
+    "circuit-breaker",
+    "resilience",
+    "fault-tolerance",
+    "express",
+    "mongodb"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.13.4",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "mongoose": "^9.1.5",
+    "nodemon": "^3.1.11"
+  },
+  "devDependencies": {
+    "mongodb-memory-server": "^11.0.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

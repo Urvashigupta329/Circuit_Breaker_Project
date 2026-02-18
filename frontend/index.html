@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Circuit Breaker Dashboard</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ctext y='14' font-size='14'%3E%F0%9F%94%8C%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Circuit Breaker Dashboard</h1>
+      <p class="subtitle">Real-time monitoring and control panel</p>
+    </header>
+
+    <!-- State Indicator -->
+    <section class="state-section">
+      <div id="state-indicator" class="state-indicator state-closed">
+        <span class="state-label">Circuit State</span>
+        <span id="state-value" class="state-value">CLOSED</span>
+        <span id="state-reason" class="state-reason"></span>
+      </div>
+      <div class="state-meta">
+        <div class="meta-item">
+          <span class="meta-label">Server Time</span>
+          <span id="server-time" class="meta-value">--</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Last Updated</span>
+          <span id="last-updated" class="meta-value">--</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Total Trips</span>
+          <span id="total-trips" class="meta-value">0</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Metrics Cards -->
+    <section class="metrics-grid">
+      <div class="metric-card">
+        <span class="metric-label">Failure Count</span>
+        <span id="failure-count" class="metric-value">0</span>
+        <span class="metric-sublabel">/ <span id="threshold">5</span> threshold</span>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">Failure Rate</span>
+        <span id="failure-rate" class="metric-value">0%</span>
+        <span class="metric-sublabel">/ <span id="rate-threshold">50%</span> threshold</span>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">Total Requests</span>
+        <span id="total-requests" class="metric-value">0</span>
+        <span class="metric-sublabel">in current window</span>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">Failed Requests</span>
+        <span id="failed-requests" class="metric-value">0</span>
+        <span class="metric-sublabel">in current window</span>
+      </div>
+    </section>
+
+    <!-- HALF_OPEN Status (shown only when in HALF_OPEN state) -->
+    <section id="halfopen-section" class="halfopen-section hidden">
+      <h3>HALF_OPEN Recovery Status</h3>
+      <div class="halfopen-grid">
+        <div class="halfopen-item">
+          <span class="halfopen-label">Test Requests</span>
+          <span id="ho-requests" class="halfopen-value">0 / 3</span>
+        </div>
+        <div class="halfopen-item">
+          <span class="halfopen-label">Successes</span>
+          <span id="ho-successes" class="halfopen-value">0 / 3</span>
+        </div>
+        <div class="halfopen-item">
+          <span class="halfopen-label">Failures</span>
+          <span id="ho-failures" class="halfopen-value">0</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Controls -->
+    <section class="controls-section">
+      <h2>Controls</h2>
+      <div class="controls-grid">
+        <div class="control-group">
+          <h3>Actions</h3>
+          <button id="refresh" class="btn btn-primary">Refresh Status</button>
+          <button id="reset" class="btn btn-warning">Reset Circuit</button>
+          <button id="health-check" class="btn btn-secondary">Health Check</button>
+        </div>
+        <div class="control-group">
+          <h3>Auto-Refresh</h3>
+          <label class="toggle">
+            <input type="checkbox" id="auto-refresh" checked />
+            <span class="toggle-slider"></span>
+            Enable (2s interval)
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <!-- Configuration -->
+    <section class="config-section">
+      <h2>Configuration</h2>
+      <div class="config-grid">
+        <div class="config-item">
+          <label for="thresholdInput">Failure Threshold</label>
+          <input id="thresholdInput" type="number" min="1" value="5" />
+          <button id="setThreshold" class="btn btn-small">Set</button>
+        </div>
+        <div class="config-item">
+          <label for="rateThresholdInput">Rate Threshold (%)</label>
+          <input id="rateThresholdInput" type="number" min="1" max="100" value="50" />
+          <button id="setRateThreshold" class="btn btn-small">Set</button>
+        </div>
+        <div class="config-item">
+          <label for="timeoutInput">Timeout (ms)</label>
+          <input id="timeoutInput" type="number" min="1000" value="30000" step="1000" />
+          <button id="setTimeout" class="btn btn-small">Set</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Simulation Settings -->
+    <section class="simulation-section">
+      <h2>Simulation Settings</h2>
+      <p class="help-text">Adjust the payment service failure rate for testing</p>
+      <div class="simulation-grid">
+        <div class="simulation-item">
+          <label for="failRateInput">Fail Rate (0-1)</label>
+          <input id="failRateInput" type="number" min="0" max="1" step="0.1" value="0.3" />
+        </div>
+        <button id="setSimulation" class="btn btn-secondary">Update Simulation</button>
+      </div>
+    </section>
+
+    <!-- Test Payments -->
+    <section class="test-section">
+      <h2>Test Payments</h2>
+      <div class="test-controls">
+        <button id="singlePay" class="btn btn-primary">Send Single Payment</button>
+        <button id="floodStart" class="btn btn-danger">Start Flood Test</button>
+        <div class="flood-config">
+          <label>Concurrency: <input id="concurrency" type="number" value="5" min="1" max="50"/></label>
+          <label>Interval (ms): <input id="rate" type="number" value="200" min="50"/></label>
+        </div>
+      </div>
+    </section>
+
+    <!-- Recent Failures -->
+    <section class="failures-section">
+      <h2>Recent Failures <span id="failure-stats" class="failure-stats"></span></h2>
+      <div id="failures-list" class="failures-list">
+        <p class="empty-message">No recent failures</p>
+      </div>
+    </section>
+
+    <!-- Activity Log -->
+    <section class="logs-section">
+      <h2>Activity Log</h2>
+      <div id="logs" class="logs"></div>
+    </section>
+
+    <!-- API Reference -->
+    <section class="api-section">
+      <h2>API Reference</h2>
+      <details>
+        <summary>View API Endpoints</summary>
+        <div class="api-list">
+          <div class="api-item">
+            <code>POST /payment</code>
+            <span>Process a payment (protected by circuit breaker)</span>
+          </div>
+          <div class="api-item">
+            <code>GET /health</code>
+            <span>Basic health check</span>
+          </div>
+          <div class="api-item">
+            <code>GET /health/detailed</code>
+            <span>Detailed health with dependencies</span>
+          </div>
+          <div class="api-item">
+            <code>GET /admin/status</code>
+            <span>Get circuit breaker status</span>
+          </div>
+          <div class="api-item">
+            <code>POST /admin/reset</code>
+            <span>Reset circuit to CLOSED</span>
+          </div>
+          <div class="api-item">
+            <code>POST /admin/threshold</code>
+            <span>Update failure threshold</span>
+          </div>
+          <div class="api-item">
+            <code>POST /admin/config</code>
+            <span>Update multiple config values</span>
+          </div>
+          <div class="api-item">
+            <code>GET /metrics</code>
+            <span>Prometheus metrics</span>
+          </div>
+        </div>
+      </details>
+    </section>
+  </div>
+  <script src="main.js"></script>
+</body>
+</html>
